@@ -2,58 +2,114 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = Number(process.env.PORT) || 5001;
 
 app.use(cors());
 app.use(express.json());
 
+// Root endpoint
+app.get('/', (_req: Request, res: Response) => {
+  res.json({
+    status: 'online',
+    system: 'AntarcticNav AI Core Engine',
+    message: 'Server is running successfully'
+  });
+});
+
 // System health endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', system: 'AntarcticNav AI Core Engine', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    system: 'AntarcticNav AI Core Engine',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Real Data proxy route for Weather (Open-Meteo REST API)
+// Weather API
 app.get('/api/weather', async (req: Request, res: Response) => {
-  const lat = req.query.lat ? Number(req.query.lat) : 0;
-  const lng = req.query.lng ? Number(req.query.lng) : 0;
+  const lat = Number(req.query.lat);
+  const lng = Number(req.query.lng);
 
-  if (!lat || !lng) {
-    res.status(400).json({ status: 'UNAVAILABLE', message: 'Valid latitude and longitude required.' });
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    res.status(400).json({
+      status: 'UNAVAILABLE',
+      message: 'Valid latitude and longitude required.'
+    });
     return;
   }
 
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code`;
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${lat}&longitude=${lng}` +
+      `&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code`;
+
     const apiRes = await fetch(url);
-    if (!apiRes.ok) throw new Error(`Open-Meteo error ${apiRes.status}`);
+
+    if (!apiRes.ok) {
+      throw new Error(`Open-Meteo error ${apiRes.status}`);
+    }
+
     const data = await apiRes.json();
-    res.json({ status: 'LIVE', data });
+
+    res.json({
+      status: 'LIVE',
+      data
+    });
   } catch (err) {
-    res.status(503).json({ status: 'UNAVAILABLE', message: 'Live weather API unavailable.' });
+    console.error('Weather API error:', err);
+
+    res.status(503).json({
+      status: 'UNAVAILABLE',
+      message: 'Live weather API unavailable.'
+    });
   }
 });
 
-// Real Data proxy route for Marine (Open-Meteo Marine REST API)
+// Marine API
 app.get('/api/ocean', async (req: Request, res: Response) => {
-  const lat = req.query.lat ? Number(req.query.lat) : 0;
-  const lng = req.query.lng ? Number(req.query.lng) : 0;
+  const lat = Number(req.query.lat);
+  const lng = Number(req.query.lng);
 
-  if (!lat || !lng) {
-    res.status(400).json({ status: 'UNAVAILABLE', message: 'Valid latitude and longitude required.' });
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    res.status(400).json({
+      status: 'UNAVAILABLE',
+      message: 'Valid latitude and longitude required.'
+    });
     return;
   }
 
   try {
-    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_direction,ocean_current_velocity`;
+    const url =
+      `https://marine-api.open-meteo.com/v1/marine` +
+      `?latitude=${lat}&longitude=${lng}` +
+      `&current=wave_height,wave_direction,ocean_current_velocity`;
+
     const apiRes = await fetch(url);
-    if (!apiRes.ok) throw new Error(`Open-Meteo Marine error ${apiRes.status}`);
+
+    if (!apiRes.ok) {
+      throw new Error(`Open-Meteo Marine error ${apiRes.status}`);
+    }
+
     const data = await apiRes.json();
-    res.json({ status: 'LIVE', data });
+
+    res.json({
+      status: 'LIVE',
+      data
+    });
   } catch (err) {
-    res.status(503).json({ status: 'UNAVAILABLE', message: 'Live marine ocean API unavailable.' });
+    console.error('Marine API error:', err);
+
+    res.status(503).json({
+      status: 'UNAVAILABLE',
+      message: 'Live marine ocean API unavailable.'
+    });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`[AntarcticNav AI Server] Core API running on port ${PORT}`);
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(
+    `[AntarcticNav AI Server] Core API running on port ${PORT}`
+  );
 });
