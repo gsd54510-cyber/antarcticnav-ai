@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install lucide-react@0.344.0 @supabase/supabase-js@2.116.0 --no-save && node node_modules/typescript/bin/tsc && vite build",
+    "build": "ls -la node_modules/lucide-react && ls -la node_modules/@supabase/supabase-js && node node_modules/typescript/bin/tsc && vite build",
     "preview": "vite preview",
     "server": "node --import tsx server/index.ts",
     "start": "concurrently \"npm run server\" \"npm run dev\""
