@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "ls -la node_modules/lucide-react && ls -la node_modules/@supabase/supabase-js && node node_modules/typescript/bin/tsc && vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "server": "node --import tsx server/index.ts",
+    "server": "tsx server/index.ts",
     "start": "concurrently \"npm run server\" \"npm run dev\""
   },
   "dependencies": {
